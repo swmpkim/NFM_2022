@@ -18,7 +18,7 @@ suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(vegan))
 ```
 
-# Read and wrangle data  
+Read and wrangle data  
 
 ```{r}
 nfm_all <- read.csv(here::here("data", "NFM_counts_master_2020-06-09.csv"),
@@ -63,7 +63,9 @@ That took the data frame from 532 rows to 475.
 Insert a child .Rmd here to generate all the summary info we want.  
 
 
-# Set up for ANOSIM, SIMPER, and NMDS  
+# ANOSIM, SIMPER, and NMDS  
+
+Setup - 
 
 Performing transformations: square-root, and natural-log(x + 1). Adding 1 to keep negative values out of the matrices before generating Bray-Curtis matrices.  
 
@@ -74,9 +76,16 @@ sqrt_dat <- dat %>%
 
 log_dat <- dat %>% 
     mutate(across(Abudefduf.saxatilis:ones, ~log(.x + 1)),
-           transformation = "ln(x+0.1)")
+           transformation = "ln(x+1)")
 ```
 
+ANOSIM will be performed with restricted permutations, to only swap observations within a sample event (year-season combination). This lets us condition on the fish community available in the broader area at the time, and avoids issues like "what if spring was different in different years generally".  
+
+In the code, this uses the `block` option. From the `permute` vignette:  
+
+**Blocking factors which restrict permutations to within blocks.** This is what we need; allow shuffling only within the same sampling event. In this project, that's the combination of year and season.   
+
+Also from the documentation: **Blocks are defined by a factor variable. Blocks restrict permutation of samples to within the levels of this factor; samples are never swapped between blocks.**  
 
 ***
 
@@ -90,8 +99,6 @@ seas <- "Spring"
 sqrt_sub <- filter(sqrt_dat, season == seas)
 log_sub <- filter(log_dat, season == seas)
 ```
-
-Insert child Rmd here for analyses  
 
 ```{r, child = '02_ANOSIM-SIMPER-NMDS.Rmd'}
 
@@ -109,8 +116,6 @@ sqrt_sub <- filter(sqrt_dat, season == seas)
 log_sub <- filter(log_dat, season == seas)
 ```
 
-Insert child Rmd here for analyses  
-
 ```{r, child = '02_ANOSIM-SIMPER-NMDS.Rmd'}
 
 ```
@@ -127,9 +132,6 @@ sqrt_sub <- filter(sqrt_dat, season == seas)
 log_sub <- filter(log_dat, season == seas)
 ```
 
-Insert child Rmd here for analyses  
-
-
 ```{r, child = '02_ANOSIM-SIMPER-NMDS.Rmd'}
 
 ```
@@ -145,8 +147,6 @@ seas <- "Winter"
 sqrt_sub <- filter(sqrt_dat, season == seas)
 log_sub <- filter(log_dat, season == seas)
 ```
-
-Insert child Rmd here for analyses  
 
 ```{r, child = '02_ANOSIM-SIMPER-NMDS.Rmd'}
 

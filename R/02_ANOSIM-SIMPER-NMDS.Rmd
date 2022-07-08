@@ -2,8 +2,12 @@
 output: html_document
 ---
 
+```{r}
+set.seed(20220708)
+```
 
-## Separate explanatory variables from species  
+
+Separate explanatory variables from species  
 
 ```{r}
 # species matrices
@@ -19,19 +23,17 @@ expl <- select(sqrt_sub, -(Abudefduf.saxatilis:ones))
 
 ***  
 
-## ANOSIM  
-
-Restricting permutations. From the `permute` vignette:  
-
-**Blocking factors which restrict permutations to within blocks.** This is what we need; allow shuffling only within the same sampling event. In this project, that's the combination of year and season.   
-
-Also from the documentation: **Blocks are defined by a factor variable. Blocks restrict permutation of samples to within the levels of this factor; samples are never swapped between blocks.**  
+### ANOSIM  
 
 
-### Overall for `r seas`  
+#### Overall for `r seas`  
 
 ```{r}
-ano1 <- anosim(sqrt_spp, grouping = expl$habitat_type,
+ano_sqrt <- anosim(sqrt_spp, grouping = expl$habitat_type,
+               distance = "bray", permutations = how(blocks = expl$year_season,
+                                                     nperm = 999))
+
+ano_log <- anosim(log_spp, grouping = expl$habitat_type,
                distance = "bray", permutations = how(blocks = expl$year_season,
                                                      nperm = 999))
 
@@ -45,12 +47,12 @@ ano_unrestricted <- anosim(sqrt_spp, grouping = expl$habitat_type,
 Double-check to see if restricting permutations changed anything here.  
 
 ```{r}
-ano1
+ano_sqrt
 ano_unrestricted  
 ```
 
 
-### Pairwise between habitats in `r seas`  
+#### Pairwise between habitats in `r seas`  
 
 ```{r}
 pairs <- t(combn(unique(expl$habitat_type), m = 2))
@@ -96,11 +98,23 @@ for(i in 1:nrow(pairs)){
 
 
 ```{r}
-outs <- data.frame(pair, ano_R_sqrt, ano_p_sqrt, ano_R_log, ano_p_log, n)
+outs <- data.frame(pair, ano_R_sqrt, ano_p_sqrt, ano_R_log, ano_p_log, n) %>% 
+    arrange(desc(ano_R_sqrt))
 outs$season <- seas
 
+overall <- data.frame(
+    pair = "OVERALL",
+    ano_R_sqrt = ano_sqrt$statistic,
+    ano_p_sqrt = ano_sqrt$signif,
+    ano_R_log = ano_log$statistic,
+    ano_p_log = ano_log$signif,
+    n = nrow(expl),
+    season = seas
+)
 
-knitr::kable(outs, digits = 4)
+all <- bind_rows(overall, outs)
+
+knitr::kable(all, digits = 4)
 # run simper
 
 ```
@@ -109,27 +123,27 @@ knitr::kable(outs, digits = 4)
 
 ***  
 
-## SIMPER  
+### SIMPER  
 
-### Overall for season  
+#### Overall for season  
 
 
-### Pairwise between habitats  
+#### Pairwise between habitats  
 
 
 ***  
 
-## NMDS  
+### NMDS  
 
-### Scree Plot  
+#### Scree Plot  
 
 How many axes should be used?  
 
 
-### run with 2 axes  
+#### run with 2 axes  
 
 
-### run with 3 axes  
+#### run with 3 axes  
 
 
-### Shepard plots and stress values  
+#### Shepard plots and stress values  
