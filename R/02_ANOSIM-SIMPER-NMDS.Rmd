@@ -1,0 +1,135 @@
+---
+output: html_document
+---
+
+
+## Separate explanatory variables from species  
+
+```{r}
+# species matrices
+sqrt_spp <- select(sqrt_sub, Abudefduf.saxatilis:ones)
+log_spp <- select(log_sub, Abudefduf.saxatilis:ones)
+
+# explanatory will be the same for both data frames; they have the same rows
+expl <- select(sqrt_sub, -(Abudefduf.saxatilis:ones))
+```
+
+
+
+
+***  
+
+## ANOSIM  
+
+Restricting permutations. From the `permute` vignette:  
+
+**Blocking factors which restrict permutations to within blocks.** This is what we need; allow shuffling only within the same sampling event. In this project, that's the combination of year and season.   
+
+Also from the documentation: **Blocks are defined by a factor variable. Blocks restrict permutation of samples to within the levels of this factor; samples are never swapped between blocks.**  
+
+
+### Overall for `r seas`  
+
+```{r}
+ano1 <- anosim(sqrt_spp, grouping = expl$habitat_type,
+               distance = "bray", permutations = how(blocks = expl$year_season,
+                                                     nperm = 999))
+
+
+ano_unrestricted <- anosim(sqrt_spp, grouping = expl$habitat_type,
+                           distance = "bray", permutations = 999)
+
+```
+
+
+Double-check to see if restricting permutations changed anything here.  
+
+```{r}
+ano1
+ano_unrestricted  
+```
+
+
+### Pairwise between habitats in `r seas`  
+
+```{r}
+pairs <- t(combn(unique(expl$habitat_type), m = 2))
+```
+
+Go through each row of the pairs matrix.  (gonna be a for loop)  
+
+```{r}
+pair <- character()
+n <- numeric()
+ano_R_sqrt <- numeric()
+ano_p_sqrt <- numeric()
+ano_R_log <- numeric()
+ano_p_log <- numeric()
+
+for(i in 1:nrow(pairs)){
+    # which rows are in this pair  
+    indcs <- which(expl$habitat_type %in% pairs[i, ])
+    
+    # subset data frames
+    sqrt_spp_pr <- sqrt_spp[indcs, ]
+    log_spp_pr <- log_spp[indcs, ]
+    expl_pr <- expl[indcs, ]
+    
+    # run anosims  
+    ano_pr_sqrt <- anosim(sqrt_spp_pr, grouping = expl_pr$habitat_type,
+                          distance = "bray", permutations = how(blocks = expl_pr$year_season,
+                                                                nperm = 999))
+
+    ano_pr_log <- anosim(log_spp_pr, grouping = expl_pr$habitat_type,
+                          distance = "bray", permutations = how(blocks = expl_pr$year_season,
+                                                                nperm = 999))
+    
+    # store outputs
+    pair[i] <- paste(pairs[i, ], collapse = ", ")
+    n[i] <- nrow(expl_pr)
+    ano_R_sqrt[i] <- ano_pr_sqrt$statistic
+    ano_p_sqrt[i] <- ano_pr_sqrt$signif
+    ano_R_log[i] <- ano_pr_log$statistic
+    ano_p_log[i] <- ano_pr_log$signif
+}
+```
+
+
+```{r}
+outs <- data.frame(pair, ano_R_sqrt, ano_p_sqrt, ano_R_log, ano_p_log, n)
+outs$season <- seas
+
+
+knitr::kable(outs, digits = 4)
+# run simper
+
+```
+
+
+
+***  
+
+## SIMPER  
+
+### Overall for season  
+
+
+### Pairwise between habitats  
+
+
+***  
+
+## NMDS  
+
+### Scree Plot  
+
+How many axes should be used?  
+
+
+### run with 2 axes  
+
+
+### run with 3 axes  
+
+
+### Shepard plots and stress values  

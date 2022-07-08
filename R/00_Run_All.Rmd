@@ -1,0 +1,158 @@
+---
+title: "NFM Parent doc"
+author: "Kim Cressman"
+date: "`r Sys.Date()`"
+output: 
+    html_document:
+        toc: true
+        toc_float: true
+        code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(vegan))
+```
+
+# Read and wrangle data  
+
+```{r}
+nfm_all <- read.csv(here::here("data", "NFM_counts_master_2020-06-09.csv"),
+                     stringsAsFactors = FALSE)
+```
+
+Remove:  
+
++  rows where no sample was taken or no counts/lengths were recorded  
++  site 1, because exploratory analyses showed this site had very different salinity than the others  
+
+Add:  
+
++  column of 1s, because NMDS doesn't work with rows of all 0s  
++  column to represent the year-season combination (to be used later in restricting permutations.)  
+
+Mutate: turn the following columns into factors:  
+
++  collection_id
++  site  
++  habitat_type  
++  year_sampled  
++  season
+
+
+```{r}
+dat <- nfm_all %>% 
+    filter(is.na(X00.no.sample.taken),
+           is.na(X02.no.lengths..reason.unknown),
+           site != 1) %>% 
+    mutate(year_season = as.factor(paste(year_sampled, season, sep = "_")),
+        across(c(collection_id, site, habitat_type, year_sampled, season), as.factor),
+           ones = 1) %>% 
+    relocate(year_season, .after = "season")
+```
+
+That took the data frame from 532 rows to 475.  
+
+
+# Summary statistics  
+
+Insert a child .Rmd here to generate all the summary info we want.  
+
+
+# Set up for ANOSIM, SIMPER, and NMDS  
+
+Performing transformations: square-root, and natural-log(x + 1). Adding 1 to keep negative values out of the matrices before generating Bray-Curtis matrices.  
+
+```{r}
+sqrt_dat <- dat %>% 
+    mutate(across(Abudefduf.saxatilis:ones, ~sqrt(.x)),
+           transformation = "sqrt")
+
+log_dat <- dat %>% 
+    mutate(across(Abudefduf.saxatilis:ones, ~log(.x + 1)),
+           transformation = "ln(x+0.1)")
+```
+
+
+***
+
+
+# Habitat differences within each season  
+
+## Spring  
+
+```{r}
+seas <- "Spring"
+sqrt_sub <- filter(sqrt_dat, season == seas)
+log_sub <- filter(log_dat, season == seas)
+```
+
+Insert child Rmd here for analyses  
+
+```{r, child = '02_ANOSIM-SIMPER-NMDS.Rmd'}
+
+```
+
+***  
+***  
+
+
+## Summer  
+
+```{r}
+seas <- "Summer"
+sqrt_sub <- filter(sqrt_dat, season == seas)
+log_sub <- filter(log_dat, season == seas)
+```
+
+Insert child Rmd here for analyses  
+
+```{r, child = '02_ANOSIM-SIMPER-NMDS.Rmd'}
+
+```
+
+***  
+***  
+
+
+## Fall  
+
+```{r}
+seas <- "Fall"
+sqrt_sub <- filter(sqrt_dat, season == seas)
+log_sub <- filter(log_dat, season == seas)
+```
+
+Insert child Rmd here for analyses  
+
+
+```{r, child = '02_ANOSIM-SIMPER-NMDS.Rmd'}
+
+```
+
+***  
+***  
+
+
+## Winter  
+
+```{r}
+seas <- "Winter"
+sqrt_sub <- filter(sqrt_dat, season == seas)
+log_sub <- filter(log_dat, season == seas)
+```
+
+Insert child Rmd here for analyses  
+
+```{r, child = '02_ANOSIM-SIMPER-NMDS.Rmd'}
+
+```
+
+***  
+***  
+
+
