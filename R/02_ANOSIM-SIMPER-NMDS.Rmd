@@ -168,6 +168,8 @@ print(densplots[[10]], split = c(2, 5, 2, 5))
 
 ### SIMPER  
 
+**Important Note**: SIMPER should only be used/interpreted if the pairwise ANOSIM for the pair of habitats was significant. Results are automatically generated for every pairwise comparison, but **not all should be used. Check ANOSIM results.**  
+
 ```{r}
 ################################################
 # SIMPER on habitat differences per season     #
