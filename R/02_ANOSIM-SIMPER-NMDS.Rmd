@@ -51,19 +51,6 @@ ano_sqrt
 ano_unrestricted  
 ```
 
-Take a look at the sample R value against the permuted distribution of Rs:  
-
-```{r}
-samp <- glue("Sample: R = ", {round(ano_sqrt$statistic, 3)}, "; p = ",
-             {round(ano_sqrt$signif, 4)})
-perm <- permustats(ano_sqrt)
-densityplot(perm, 
-            main = paste("OVERALL,", seas),
-            xlab = "R (permuted values)",
-            ylab = "density",
-            strip = FALSE,
-            sub = samp)
-```
 
 
 #### Pairwise between habitats in `r seas`  
@@ -80,6 +67,7 @@ ano_R_sqrt <- numeric()
 ano_p_sqrt <- numeric()
 ano_R_log <- numeric()
 ano_p_log <- numeric()
+densplots <- list()
 
 for(i in 1:nrow(pairs)){
     # which rows are in this pair  
@@ -111,11 +99,13 @@ for(i in 1:nrow(pairs)){
     perm <- permustats(ano_pr_sqrt)
     samp <- glue("Sample: R = ", {round(ano_pr_sqrt$statistic, 3)}, "; p = ",
              {round(ano_pr_sqrt$signif, 4)})
-    print(densityplot(perm, main = paste0(pair[i], "; ", seas),
+    p <- densityplot(perm, main = pair[i],
             xlab = "R (permuted values)",
             ylab = "density",
             strip = FALSE,
-            sub = samp))
+            sub = samp)
+    densplots[[i]] <- p
+   
 }
 ```
 
@@ -141,6 +131,35 @@ knitr::kable(all, digits = 4)
 
 # save data frame to csv or .rds??
 
+```
+
+#### Density plots of permutations  
+
+```{r}
+samp <- glue("Sample: R = ", {round(ano_sqrt$statistic, 3)}, "; p = ",
+             {round(ano_sqrt$signif, 4)})
+perm <- permustats(ano_sqrt)
+densityplot(perm, 
+            main = paste("OVERALL,", seas),
+            xlab = "R (permuted values)",
+            ylab = "density",
+            strip = FALSE,
+            sub = samp)
+```
+
+
+```{r, fig.width = 8, fig.height = 16}
+# print density plots
+print(densplots[[1]], split = c(1, 1, 2, 5), more = TRUE)
+print(densplots[[2]], split = c(2, 1, 2, 5), more = TRUE)
+print(densplots[[3]], split = c(1, 2, 2, 5), more = TRUE)
+print(densplots[[4]], split = c(2, 2, 2, 5), more = TRUE)
+print(densplots[[5]], split = c(1, 3, 2, 5), more = TRUE)
+print(densplots[[6]], split = c(2, 3, 2, 5), more = TRUE)
+print(densplots[[7]], split = c(1, 4, 2, 5), more = TRUE)
+print(densplots[[8]], split = c(2, 4, 2, 5), more = TRUE)
+print(densplots[[9]], split = c(1, 5, 2, 5), more = TRUE)
+print(densplots[[10]], split = c(2, 5, 2, 5))
 ```
 
 
