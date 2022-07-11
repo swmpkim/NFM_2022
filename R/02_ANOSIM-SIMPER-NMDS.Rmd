@@ -54,8 +54,15 @@ ano_unrestricted
 Take a look at the sample R value against the permuted distribution of Rs:  
 
 ```{r}
+samp <- glue("Sample: R = ", {round(ano_sqrt$statistic, 3)}, "; p = ",
+             {round(ano_sqrt$signif, 4)})
 perm <- permustats(ano_sqrt)
-densityplot(perm, main = paste("OVERALL,", seas))
+densityplot(perm, 
+            main = paste("OVERALL,", seas),
+            xlab = "R (permuted values)",
+            ylab = "density",
+            strip = FALSE,
+            sub = samp)
 ```
 
 
@@ -102,7 +109,13 @@ for(i in 1:nrow(pairs)){
     
     # print the density plot of permutations  
     perm <- permustats(ano_pr_sqrt)
-    print(densityplot(perm, main = paste0(pair[i], "; ", seas)))
+    samp <- glue("Sample: R = ", {round(ano_pr_sqrt$statistic, 3)}, "; p = ",
+             {round(ano_pr_sqrt$signif, 4)})
+    print(densityplot(perm, main = paste0(pair[i], "; ", seas),
+            xlab = "R (permuted values)",
+            ylab = "density",
+            strip = FALSE,
+            sub = samp))
 }
 ```
 
