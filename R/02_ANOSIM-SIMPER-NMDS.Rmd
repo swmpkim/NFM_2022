@@ -51,6 +51,13 @@ ano_sqrt
 ano_unrestricted  
 ```
 
+Take a look at the sample R value against the permuted distribution of Rs:  
+
+```{r}
+perm <- permustats(ano_sqrt)
+densityplot(perm, main = paste("OVERALL,", seas))
+```
+
 
 #### Pairwise between habitats in `r seas`  
 
@@ -58,7 +65,6 @@ ano_unrestricted
 pairs <- t(combn(unique(expl$habitat_type), m = 2))
 ```
 
-Go through each row of the pairs matrix.  (gonna be a for loop)  
 
 ```{r}
 pair <- character()
@@ -93,6 +99,10 @@ for(i in 1:nrow(pairs)){
     ano_p_sqrt[i] <- ano_pr_sqrt$signif
     ano_R_log[i] <- ano_pr_log$statistic
     ano_p_log[i] <- ano_pr_log$signif
+    
+    # print the density plot of permutations  
+    perm <- permustats(ano_pr_sqrt)
+    print(densityplot(perm, main = paste0(pair[i], "; ", seas)))
 }
 ```
 
@@ -115,7 +125,8 @@ overall <- data.frame(
 all <- bind_rows(overall, outs)
 
 knitr::kable(all, digits = 4)
-# run simper
+
+# save data frame to csv or .rds??
 
 ```
 
