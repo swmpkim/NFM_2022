@@ -214,11 +214,110 @@ lapply(sqrt_simp_spp, function(z) knitr::kable(z, digits = 4))
 
 How many axes should be used?  
 
+```{r}
+# from goeveg package
+dimcheckMDS(sqrt_spp, k = 10, autotransform = FALSE)
+```
+
+
 
 #### run with 2 axes  
+
+```{r}
+mds2 <- metaMDS(sqrt_spp, distance = "bray", k = 2,
+                trymax = 50,
+                autotransform = FALSE,
+                trace = 0)
+
+# print the summary info
+mds2
+
+# construct stuff for later
+str2 <- glue("Stress: {round(mds2$stress, 3)}")
+mds2_pts <- data.frame(mds2$points) %>% 
+    bind_cols(expl)
+mds2_spps <- data.frame(mds2$species)
+```
+
 
 
 #### run with 3 axes  
 
+```{r}
+mds3 <- metaMDS(sqrt_spp, distance = "bray", k = 3,
+                trymax = 50,
+                autotransform = FALSE,
+                trace = 0)
+
+# print the summary info
+mds3
+
+# generate stuff for later plots
+str3 <- glue("Stress: {round(mds3$stress, 3)}")
+mds3_pts <- data.frame(mds3$points) %>% 
+    bind_cols(expl)
+mds3_spps <- data.frame(mds3$species)
+```
+
 
 #### Shepard plots and stress values  
+
+```{r}
+stressplot(mds2, main = "2 axes", 
+           sub = str2)
+stressplot(mds3, main = "3 axes",
+           sub = str3)
+```
+
+
+#### NMDS plots  
+
+```{r}
+yr_shapes <- c(1, 3, 4, 6, 7, 8, 9, 10, 12, 14)
+```
+
+
+```{r}
+ggplot(mds2_pts) +
+    geom_point(aes(x = MDS1, y = MDS2, color = habitat_type),
+               size = 2, alpha = 0.7) +
+    theme_bw() +
+    labs(title = glue("{seas}, 2 dimensions"),
+         subtitle = str2,
+         color = "Habitat")
+
+ggplot(mds2_pts) +
+    geom_point(aes(x = MDS1, y = MDS2, color = habitat_type,
+                   shape = as.factor(year_sampled)),
+               size = 3) +
+    scale_shape_manual(values = yr_shapes) +
+    theme_bw() +
+    labs(title = glue("{seas}, 2 dimensions"),
+         subtitle = str2,
+         color = "Habitat",
+         shape = "Sample Year")
+```
+
+```{r}
+ggplot(mds3_pts) +
+    geom_point(aes(x = MDS1, y = MDS2, color = habitat_type),
+               size = 2, alpha = 0.7) +
+    theme_bw() +
+    labs(title = glue("{seas}, 3 dimensions"),
+         subtitle = str3,
+         color = "Habitat",
+         shape = "Sample Year")
+
+
+ggplot(mds3_pts) +
+    geom_point(aes(x = MDS1, y = MDS2, color = habitat_type,
+                   shape = as.factor(year_sampled)),
+               size = 3) +
+    scale_shape_manual(values = yr_shapes) +
+    theme_bw() +
+    labs(title = glue("{seas}, 3 dimensions"),
+         subtitle = str3,
+         color = "Habitat",
+         shape = "Sample Year")
+```
+

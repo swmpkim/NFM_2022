@@ -17,6 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(vegan))
 library(glue)
+library(goeveg)
 ```
 
 Read and wrangle data  
