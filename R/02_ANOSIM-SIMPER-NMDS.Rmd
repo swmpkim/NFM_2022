@@ -270,7 +270,7 @@ stressplot(mds3, main = "3 axes",
 ```
 
 
-#### NMDS plots  
+### NMDS plots  
 
 Because all the seasons (in my glance) really did need 3 dimensions in the NMDS, I'm commenting out the plots for 2-d results.
 
@@ -361,11 +361,6 @@ ggord(mds3, expl$habitat_type, axes = c("2", "3"), poly = FALSE, max.overlaps = 
 ggord(mds3, expl$habitat_type, axes = c("1", "3"), poly = FALSE, max.overlaps = 20, var_sub = c(spps))
 ```
 
-
-```{r}
-library(rgl)
-```
-
 ```{r}
 # really should generate a color paletter from r color brewer or something;
 # panicking here at the end of the day
@@ -391,7 +386,7 @@ mds3_pts2 <- mds3_pts %>%
 
 ```
 
-#### 3d NMDS plot  
+### 3d NMDS plot  
 
 ```{r, webgl = TRUE}
 plot3d(
