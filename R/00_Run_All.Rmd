@@ -18,6 +18,8 @@ suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(vegan))
 library(glue)
 library(goeveg)
+library(rgl)
+knitr::knit_hooks$set(webgl = hook_webgl)
 ```
 
 Read and wrangle data  

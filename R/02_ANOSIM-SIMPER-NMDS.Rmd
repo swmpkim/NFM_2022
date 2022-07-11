@@ -272,30 +272,32 @@ stressplot(mds3, main = "3 axes",
 
 #### NMDS plots  
 
+Because all the seasons (in my glance) really did need 3 dimensions in the NMDS, I'm commenting out the plots for 2-d results.
+
 ```{r}
 yr_shapes <- c(1, 3, 4, 6, 7, 8, 9, 10, 12, 14)
 ```
 
 
 ```{r}
-ggplot(mds2_pts) +
-    geom_point(aes(x = MDS1, y = MDS2, color = habitat_type),
-               size = 2, alpha = 0.7) +
-    theme_bw() +
-    labs(title = glue("{seas}, 2 dimensions"),
-         subtitle = str2,
-         color = "Habitat")
-
-ggplot(mds2_pts) +
-    geom_point(aes(x = MDS1, y = MDS2, color = habitat_type,
-                   shape = as.factor(year_sampled)),
-               size = 3) +
-    scale_shape_manual(values = yr_shapes) +
-    theme_bw() +
-    labs(title = glue("{seas}, 2 dimensions"),
-         subtitle = str2,
-         color = "Habitat",
-         shape = "Sample Year")
+# ggplot(mds2_pts) +
+#     geom_point(aes(x = MDS1, y = MDS2, color = habitat_type),
+#                size = 2, alpha = 0.7) +
+#     theme_bw() +
+#     labs(title = glue("{seas}, 2 dimensions"),
+#          subtitle = str2,
+#          color = "Habitat")
+# 
+# ggplot(mds2_pts) +
+#     geom_point(aes(x = MDS1, y = MDS2, color = habitat_type,
+#                    shape = as.factor(year_sampled)),
+#                size = 3) +
+#     scale_shape_manual(values = yr_shapes) +
+#     theme_bw() +
+#     labs(title = glue("{seas}, 2 dimensions"),
+#          subtitle = str2,
+#          color = "Habitat",
+#          shape = "Sample Year")
 ```
 
 ```{r}
@@ -319,5 +321,90 @@ ggplot(mds3_pts) +
          subtitle = str3,
          color = "Habitat",
          shape = "Sample Year")
+```
+
+
+Put ellipses around the habitat groups and add arrows of SIMPER species.  
+
+```{r}
+library(ggord)
+```
+
+```{r}
+sqrt_simp_spp <- purrr::map(sqrt_simp_spp, rownames_to_column, var = "species") 
+simps <- bind_rows(sqrt_simp_spp)
+spps <- unique(simps$species)
+```
+
+```{r}
+ggord(mds3, expl$habitat_type, poly = FALSE, max.overlaps = 20, var_sub = c(spps))
+```
+
+Look at all combinations of the 3 axes:
+
+```{r}
+ggord(mds3, expl$habitat_type, axes = c("1", "2"), ellipse = FALSE, max.overlaps = 20, var_sub = c(spps))
+
+ggord(mds3, expl$habitat_type, axes = c("2", "3"), ellipse = FALSE, max.overlaps = 20, var_sub = c(spps))
+
+ggord(mds3, expl$habitat_type, axes = c("1", "3"), ellipse = FALSE, max.overlaps = 20, var_sub = c(spps))
+```
+
+
+With ellipses:
+
+```{r}
+ggord(mds3, expl$habitat_type, axes = c("1", "2"), poly = FALSE, max.overlaps = 20, var_sub = c(spps))
+
+ggord(mds3, expl$habitat_type, axes = c("2", "3"), poly = FALSE, max.overlaps = 20, var_sub = c(spps))
+
+ggord(mds3, expl$habitat_type, axes = c("1", "3"), poly = FALSE, max.overlaps = 20, var_sub = c(spps))
+```
+
+
+```{r}
+library(rgl)
+```
+
+```{r}
+# really should generate a color paletter from r color brewer or something;
+# panicking here at the end of the day
+mds3_pts2 <- mds3_pts %>% 
+    mutate(color = case_when(habitat_type == "seagrass" ~ "green",
+                             habitat_type == "shell midden" ~ "brown",
+                             habitat_type == "beach" ~ "orange",
+                             habitat_type == "erosional edge" ~ "blue",
+                             TRUE ~ "red"))
+
+# plot3d(
+#     x = mds3_pts2$MDS1,
+#     y = mds3_pts2$MDS2,
+#     z = mds3_pts2$MDS3,
+#     col = mds3_pts2$color,
+#     type = "s",
+#     size = 2,
+#     xlab = "MDS1",
+#     ylab = "MDS2",
+#     zlab = "MDS3"
+# )
+
+
+```
+
+#### 3d NMDS plot  
+
+```{r, webgl = TRUE}
+plot3d(
+    x = mds3_pts2$MDS1,
+    y = mds3_pts2$MDS2,
+    z = mds3_pts2$MDS3,
+    col = mds3_pts2$color,
+    type = "s",
+    size = 2,
+    xlab = "MDS1",
+    ylab = "MDS2",
+    zlab = "MDS3"
+)
+
 ```
 
