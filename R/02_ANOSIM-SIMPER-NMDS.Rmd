@@ -168,11 +168,41 @@ print(densplots[[10]], split = c(2, 5, 2, 5))
 
 ### SIMPER  
 
-#### Overall for season  
+```{r}
+################################################
+# SIMPER on habitat differences per season     #
+# only meaningful to interpret if              #
+# significant differences in pairwise ANOSIMs  #
+################################################
+
+# default simper print method prints species up to first one that drives cumulative sum above 0.7
+# https://rdrr.io/cran/vegan/src/R/simper.R
+# this is modified to include *all* columns from the output
 
 
-#### Pairwise between habitats  
+# for summarizing:
+top <- 4
+toprint <- function(x){
+  out <- character(length = top)
+  for(i in 1:top){
+    out[i] <- paste0(rownames(x[i, ]), " (", round(x[i, 1], 3), ")")
+  }
+  paste(out, collapse = "; ")
+}
 
+
+# SIMPER
+# print top 4 species for each pairwise contrast (using function above)
+# and their contribution
+sqrt_simp <- simper(sqrt_spp, expl$habitat_type)
+lapply(summary(sqrt_simp), function(x) toprint(x))
+
+# print info for all of the species that get 
+# total variance explained above 70%
+sqrt_simp_spp <- lapply(summary(sqrt_simp), function(z) z[seq_len(min(which(z$cumsum >= 0.7))), ])
+
+lapply(sqrt_simp_spp, function(z) knitr::kable(z, digits = 4))
+```
 
 ***  
 

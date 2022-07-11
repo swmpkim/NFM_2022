@@ -64,7 +64,7 @@ That took the data frame from 532 rows to 475.
 Insert a child .Rmd here to generate all the summary info we want.  
 
 
-# ANOSIM, SIMPER, and NMDS  
+# Habitat differences within each season: ANOSIM, SIMPER, and NMDS    
 
 Setup - 
 
@@ -91,7 +91,6 @@ Also from the documentation: **Blocks are defined by a factor variable. Blocks r
 ***
 
 
-# Habitat differences within each season  
 
 ## Spring  
 
