@@ -362,28 +362,17 @@ ggord(mds3, expl$habitat_type, axes = c("1", "3"), poly = FALSE, max.overlaps = 
 ```
 
 ```{r}
-# really should generate a color paletter from r color brewer or something;
-# panicking here at the end of the day
-mds3_pts2 <- mds3_pts %>% 
-    mutate(color = case_when(habitat_type == "seagrass" ~ "green",
-                             habitat_type == "shell midden" ~ "brown",
-                             habitat_type == "beach" ~ "orange",
-                             habitat_type == "erosional edge" ~ "blue",
-                             TRUE ~ "red"))
+# a few options I like for the palette
+# viridis::viridis(n = 5, option = "C")
+# viridis::viridis(n = 5, option = "H")
+# RColorBrewer options aren't colorblind safe; unsure about viridis options
+# RColorBrewer::brewer.pal(5, "Accent")
+# RColorBrewer::brewer.pal(5, "Set1")
 
-# plot3d(
-#     x = mds3_pts2$MDS1,
-#     y = mds3_pts2$MDS2,
-#     z = mds3_pts2$MDS3,
-#     col = mds3_pts2$color,
-#     type = "s",
-#     size = 2,
-#     xlab = "MDS1",
-#     ylab = "MDS2",
-#     zlab = "MDS3"
-# )
+pal <- data.frame("habitat_type" = unique(expl$habitat_type),
+                  "color" = viridis::viridis(n = 5, option = "H"))
 
-
+mds3_pts2 <- left_join(mds3_pts, pal)
 ```
 
 ### 3d NMDS plot  
@@ -400,6 +389,12 @@ plot3d(
     ylab = "MDS2",
     zlab = "MDS3"
 )
+
+legend3d("bottomleft", legend = pal$habitat_type, pch = 16, col = pal$color, ncol = 2, cex = 0.8, inset = c(0.02), text.width = NA)
+
+# add	
+# whether to add the points to an existing plot.
+# might be able to get some species on here???
 
 ```
 

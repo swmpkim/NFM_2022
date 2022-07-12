@@ -16,9 +16,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(vegan))
-library(glue)
-library(goeveg)
-library(rgl)
+suppressPackageStartupMessages(library(glue))
+suppressPackageStartupMessages(library(goeveg))
+suppressPackageStartupMessages(library(rgl))
 knitr::knit_hooks$set(webgl = hook_webgl)
 ```
 
