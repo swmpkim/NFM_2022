@@ -19,6 +19,7 @@ suppressPackageStartupMessages(library(vegan))
 suppressPackageStartupMessages(library(glue))
 suppressPackageStartupMessages(library(goeveg))
 suppressPackageStartupMessages(library(rgl))
+suppressPackageStartupMessages(library(ggord))
 knitr::knit_hooks$set(webgl = hook_webgl)
 ```
 
