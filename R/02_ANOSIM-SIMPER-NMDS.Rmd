@@ -23,10 +23,10 @@ expl <- select(sqrt_sub, -(Abudefduf.saxatilis:ones))
 
 ***  
 
-### ANOSIM  
+## ANOSIM  
 
 
-#### Overall for `r seas`  
+### Overall for `r seas`  
 
 ```{r}
 ano_sqrt <- anosim(sqrt_spp, grouping = expl$habitat_type,
@@ -53,7 +53,7 @@ ano_unrestricted
 
 
 
-#### Pairwise between habitats in `r seas`  
+### Pairwise between habitats in `r seas`  
 
 ```{r}
 pairs <- t(combn(unique(expl$habitat_type), m = 2))
@@ -133,7 +133,7 @@ knitr::kable(all, digits = 4)
 
 ```
 
-#### Density plots of permutations  
+### Density plots of permutations  
 
 ```{r}
 samp <- glue("Sample: R = ", {round(ano_sqrt$statistic, 3)}, "; p = ",
@@ -166,7 +166,7 @@ print(densplots[[10]], split = c(2, 5, 2, 5))
 
 ***  
 
-### SIMPER  
+## SIMPER  
 
 **Important Note**: SIMPER should only be used/interpreted if the pairwise ANOSIM for the pair of habitats was significant. Results are automatically generated for every pairwise comparison, but **not all should be used. Check ANOSIM results.**  
 
@@ -208,7 +208,7 @@ lapply(sqrt_simp_spp, function(z) knitr::kable(z, digits = 4))
 
 ***  
 
-### NMDS  
+## NMDS  
 
 #### Scree Plot  
 
@@ -270,7 +270,7 @@ stressplot(mds3, main = "3 axes",
 ```
 
 
-### NMDS plots  
+## NMDS plots  
 
 Because all the seasons (in my glance) really did need 3 dimensions in the NMDS, I'm commenting out the plots for 2-d results.  
 
@@ -383,7 +383,7 @@ ggord(mds3, expl$habitat_type, axes = c("1", "3"), poly = FALSE, max.overlaps = 
 
 
 
-### 3d NMDS plot  
+## 3d NMDS plot  
 
 Set up color palette and SIMPER-only species  
 
@@ -450,7 +450,7 @@ for(i in seq_along(mds_rows)){
 # make and save the plot
 
 # open and create size
-open3d()
+# open3d()
 par3d(windowRect = c(20, 20, 750, 750))
 
 # plot the points
@@ -508,7 +508,7 @@ htmlwidgets::saveWidget(rglwidget(width = 700,
                                   height = 700), 
                         file = out_path)
 
-close3d()
+# close3d()
 ```
 
 

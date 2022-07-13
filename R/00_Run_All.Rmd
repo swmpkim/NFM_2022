@@ -68,7 +68,7 @@ That took the data frame from 532 rows to 475.
 Insert a child .Rmd here to generate all the summary info we want.  
 
 
-# Habitat differences within each season: ANOSIM, SIMPER, and NMDS    
+# Habitat differences within each season   
 
 Setup - 
 
@@ -96,7 +96,7 @@ Also from the documentation: **Blocks are defined by a factor variable. Blocks r
 
 
 
-## Spring  
+# Spring  
 
 ```{r}
 seas <- "Spring"
@@ -112,7 +112,7 @@ log_sub <- filter(log_dat, season == seas)
 ***  
 
 
-## Summer  
+# Summer  
 
 ```{r}
 seas <- "Summer"
@@ -128,7 +128,7 @@ log_sub <- filter(log_dat, season == seas)
 ***  
 
 
-## Fall  
+# Fall  
 
 ```{r}
 seas <- "Fall"
@@ -144,7 +144,7 @@ log_sub <- filter(log_dat, season == seas)
 ***  
 
 
-## Winter  
+# Winter  
 
 ```{r}
 seas <- "Winter"
