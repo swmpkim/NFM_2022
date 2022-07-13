@@ -282,6 +282,9 @@ yr_shapes <- c(1, 3, 4, 6, 7, 8, 9, 10, 12, 14)
 
 
 ```{r}
+# NMDS with only 2 axes
+
+
 # ggplot(mds2_pts) +
 #     geom_point(aes(x = MDS1, y = MDS2, color = habitat_type),
 #                size = 2, alpha = 0.7) +
@@ -303,31 +306,33 @@ yr_shapes <- c(1, 3, 4, 6, 7, 8, 9, 10, 12, 14)
 ```
 
 ```{r}
-ggplot(mds3_pts) +
-    geom_point(aes(x = MDS1, y = MDS2, color = habitat_type),
-               size = 2, alpha = 0.7) +
-    theme_bw() +
-    labs(title = glue("{seas}, 3 dimensions"),
-         subtitle = str3,
-         color = "Habitat",
-         shape = "Sample Year")
+# NMDS with 3 axes; using year as shape
+# could be informative but it's a lot more to try to digest
 
 
-ggplot(mds3_pts) +
-    geom_point(aes(x = MDS1, y = MDS2, color = habitat_type,
-                   shape = as.factor(year_sampled)),
-               size = 3) +
-    scale_shape_manual(values = yr_shapes) +
-    theme_bw() +
-    labs(title = glue("{seas}, 3 dimensions"),
-         subtitle = str3,
-         color = "Habitat",
-         shape = "Sample Year")
+# ggplot(mds3_pts) +
+#     geom_point(aes(x = MDS1, y = MDS2, color = habitat_type),
+#                size = 2, alpha = 0.7) +
+#     theme_bw() +
+#     labs(title = glue("{seas}, 3 dimensions"),
+#          subtitle = str3,
+#          color = "Habitat",
+#          shape = "Sample Year")
+# 
+# 
+# ggplot(mds3_pts) +
+#     geom_point(aes(x = MDS1, y = MDS2, color = habitat_type,
+#                    shape = as.factor(year_sampled)),
+#                size = 3) +
+#     scale_shape_manual(values = yr_shapes) +
+#     theme_bw() +
+#     labs(title = glue("{seas}, 3 dimensions"),
+#          subtitle = str3,
+#          color = "Habitat",
+#          shape = "Sample Year")
 ```
 
 #### Include species; without ellipses  
-
-Put ellipses around the habitat groups and add arrows of SIMPER species.  
 
 
 ```{r}
@@ -340,14 +345,6 @@ spps <- unique(simps$species)
 Look at all combinations of the 3 axes:
 
 ```{r}
-ggord(mds3, expl$habitat_type, 
-      axes = c("1", "2"), ellipse = FALSE, 
-      max.overlaps = 20, var_sub = c(spps), 
-      xlims = c(-1.5, 1.5), ylims = c(-1.5, 1.5)) +
-    labs(title = glue("{seas}, axes 1 & 2"),
-         subtitle = glue("3-Dimensional {str3}"),
-         color = "Habitat")
-
 ggord(mds3, expl$habitat_type, 
       axes = c("1", "2"), ellipse = FALSE, 
       max.overlaps = 20, var_sub = c(spps),
@@ -364,10 +361,13 @@ ggord(mds3, expl$habitat_type,
          subtitle = glue("3-Dimensional {str3}"),
          color = "Habitat")
 
-ggord(mds3, expl$habitat_type, axes = c("2", "3"), ellipse = FALSE, max.overlaps = 20, var_sub = c(spps), 
-      xlims = c(-1.5, 1.5), ylims = c(-1.5, 1.5))
-
-ggord(mds3, expl$habitat_type, axes = c("1", "3"), ellipse = FALSE, max.overlaps = 20, var_sub = c(spps), repel = TRUE)
+ggord(mds3, expl$habitat_type, 
+      axes = c("1", "3"), ellipse = FALSE, 
+      max.overlaps = 20, var_sub = c(spps),
+      repel = TRUE) +
+    labs(title = glue("{seas}, axes 1 & 3"),
+         subtitle = glue("3-Dimensional {str3}"),
+         color = "Habitat")
 ```
 
 #### Include species; with ellipses  
@@ -417,7 +417,7 @@ mds3_spps2 <- mds3_spps %>%
 
 
 
-```{r, webgl = TRUE}
+```{r}
 
 # set up points and data frames
 
@@ -430,7 +430,7 @@ y_spp <- mds3_spps2$MDS2
 z_spp <- mds3_spps2$MDS3
 
 
-# to get line segments; this is so hacky
+### to get line segments; this is so hacky
 # add a row of 0s before every row of the spps data frame
 mds3_spps3 <- mds3_spps2
 
@@ -446,7 +446,7 @@ for(i in seq_along(mds_rows)){
 ```
 
 
-```{r}
+```{r, webgl = TRUE}
 # make and save the plot
 
 # open and create size
@@ -493,8 +493,11 @@ text3d(
 # add line segments for the species
 segments3d(mds3_spps3[2:4])
 
-# add a legend
-legend3d("right", legend = pal$habitat_type, pch = 16, col = pal$color, ncol = 1, cex = 0.8, inset = c(0.02), text.width = NA)
+# add a legend 
+# note these are drawn as bitmaps and can look wonky
+legend3d("right", legend = pal$habitat_type, 
+         pch = 16, col = pal$color, ncol = 1, 
+         cex = 0.8, inset = c(0.02), text.width = NA)
 
 
 # save it
