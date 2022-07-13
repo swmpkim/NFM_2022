@@ -340,18 +340,20 @@ spps <- unique(simps$species)
 Look at all combinations of the 3 axes:
 
 ```{r}
-ggord(mds3, expl$habitat_type, axes = c("1", "2"), ellipse = FALSE, max.overlaps = 20, var_sub = c(spps))
+ggord(mds3, expl$habitat_type, axes = c("1", "2"), ellipse = FALSE, max.overlaps = 20, var_sub = c(spps), 
+      xlims = c(-1.5, 1.5), ylims = c(-1.5, 1.5))
 
-ggord(mds3, expl$habitat_type, axes = c("2", "3"), ellipse = FALSE, max.overlaps = 20, var_sub = c(spps))
+ggord(mds3, expl$habitat_type, axes = c("2", "3"), ellipse = FALSE, max.overlaps = 20, var_sub = c(spps), 
+      xlims = c(-1.5, 1.5), ylims = c(-1.5, 1.5))
 
-ggord(mds3, expl$habitat_type, axes = c("1", "3"), ellipse = FALSE, max.overlaps = 20, var_sub = c(spps))
+ggord(mds3, expl$habitat_type, axes = c("1", "3"), ellipse = FALSE, max.overlaps = 20, var_sub = c(spps), 
+      xlims = c(-1.5, 1.5), ylims = c(-1.5, 1.5))
 ```
 
 #### Include species; with ellipses  
 
-With ellipses:
 
-```{r}
+```{r, eval = FALSE}
 ggord(mds3, expl$habitat_type, axes = c("1", "2"), poly = FALSE, max.overlaps = 20, var_sub = c(spps))
 
 ggord(mds3, expl$habitat_type, axes = c("2", "3"), poly = FALSE, max.overlaps = 20, var_sub = c(spps))
@@ -359,40 +361,136 @@ ggord(mds3, expl$habitat_type, axes = c("2", "3"), poly = FALSE, max.overlaps = 
 ggord(mds3, expl$habitat_type, axes = c("1", "3"), poly = FALSE, max.overlaps = 20, var_sub = c(spps))
 ```
 
+
+
+### 3d NMDS plot  
+
+Set up color palette and SIMPER-only species  
+
 ```{r}
 # a few options I like for the palette
 # viridis::viridis(n = 5, option = "C")
 # viridis::viridis(n = 5, option = "H")
+
 # RColorBrewer options aren't colorblind safe; unsure about viridis options
 # RColorBrewer::brewer.pal(5, "Accent")
 # RColorBrewer::brewer.pal(5, "Set1")
 
-pal <- data.frame("habitat_type" = unique(expl$habitat_type),
-                  "color" = viridis::viridis(n = 5, option = "H"))
+# see khroma package for all colorblind-friendly palettes
+# as.character(khroma::colour("bright")(5))
+# as.character(khroma::colour("okabeito")(5))
+# as.character(khroma::colour("muted")(5))
 
+
+pal <- data.frame("habitat_type" = unique(expl$habitat_type),
+                  "color" = as.character(khroma::colour("bright")(5)))
+
+# add colors to data frame
 mds3_pts2 <- left_join(mds3_pts, pal)
+
+
+# subset species output to only those from SIMPER
+mds3_spps2 <- mds3_spps %>% 
+    rownames_to_column("species") %>% 
+    filter(species %in% spps)
 ```
 
-### 3d NMDS plot  
+
 
 ```{r, webgl = TRUE}
+# open3d()
+par3d(windowRect = c(20, 20, 750, 750))
+
 plot3d(
     x = mds3_pts2$MDS1,
     y = mds3_pts2$MDS2,
     z = mds3_pts2$MDS3,
     col = mds3_pts2$color,
     type = "s",
-    size = 2,
+    size = 1,
     xlab = "MDS1",
     ylab = "MDS2",
     zlab = "MDS3"
 )
 
-legend3d("bottomleft", legend = pal$habitat_type, pch = 16, col = pal$color, ncol = 2, cex = 0.8, inset = c(0.02), text.width = NA)
+# grid3d(c("x", "y+", "z"))
 
-# add	
-# whether to add the points to an existing plot.
-# might be able to get some species on here???
+plot3d(
+    x = mds3_spps2$MDS1,
+    y = mds3_spps2$MDS2,
+    z = mds3_spps2$MDS3,
+    type = "s",
+    size = 0.7,
+    col = "black",
+    add = TRUE
+)
 
+text3d(
+    x = mds3_spps2$MDS1,
+    y = mds3_spps2$MDS2,
+    z = mds3_spps2$MDS3,
+    texts = mds3_spps2$species,
+    add = TRUE,
+    cex = 0.8
+)
+
+legend3d("right", legend = pal$habitat_type, pch = 16, col = pal$color, ncol = 1, cex = 0.8, inset = c(0.02), text.width = NA)
+
+s <- scene3d()
+
+close3d()
+
+# save it
+out_nm <- glue("NMDS_3d_{seas}.html")
+out_path <- here::here("output", out_nm)
+
+htmlwidgets::saveWidget(rglwidget(s,
+                                  width = 600,
+                                  height = 600), 
+                        file = out_path)
+```
+
+```{r}
+# arrows?
+plot3d(s)
+lines3d(x = mds3_spps2$MDS1,
+    y = mds3_spps2$MDS2,
+    z = mds3_spps2$MDS3,
+    add = TRUE)
+```
+
+
+
+```{r, eval = FALSE}
+# this only works interactively
+identify3d(
+    x = mds3_spps2$MDS1,
+    y = mds3_spps2$MDS2,
+    z = mds3_spps2$MDS3,
+    labels = mds3_spps2$species
+)
+```
+
+
+```{r}
+# library(vegan3d)
+# ordirgl(mds3, groups = expl$habitat_type, col = 1:5)
+# orgltext(mds3, display = "species")
+
+```
+
+```{r}
+library(plotly)
+
+fig <- plot_ly(mds3_pts2, x = ~MDS1, y = ~MDS2, z = ~MDS3, 
+               color = ~habitat_type, colors = pal$color, 
+               sizes = c(3, 3)) %>% 
+    add_markers()
+fig <- fig %>% layout(scene = list(
+    xaxis = list(title = "MDS1"),
+    yaxis = list(title = 'MDS2'),
+    zaxis = list(title = 'MDS3')))
+
+fig
 ```
 
