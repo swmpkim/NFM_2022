@@ -1,0 +1,74 @@
+---
+output: html_document
+---
+
+**Site 1 is excluded from all summary statistics because it was excluded from further analyses.**  
+
+
+```{r}
+# get rid of the 'ones' column though
+dat2 <- dat %>% select(-ones)
+```
+
+
+## Sample Size   
+
+```{r}
+dat2 %>% 
+    janitor::tabyl(habitat_type, season)
+```
+
+
+## Number of species  
+
+```{r}
+
+```
+
+
+## Number of each species caught throughout sampling  
+
+how many times was each caught, and how many individuals were caught  
+
+```{r}
+counts <- dat2 %>% 
+    select(Abudefduf.saxatilis:Urophycis.floridana) %>% 
+    summarize(across(.cols = everything(),
+                     .fns = list(timesCaught = ~sum(.x > 0),
+                                 nCaught = ~sum(.x)))) %>% 
+    pivot_longer(cols = everything(),
+                 names_to = c("Species", "thing"),
+                 names_sep = "_") %>% 
+    mutate(thing = case_when(thing == "timesCaught" ~ "Times_caught",
+                             TRUE ~ "n_caught")) %>% 
+    pivot_wider(names_from = thing, values_from = value) 
+
+```
+
+### Most frequently caught  
+
+```{r}
+counts %>% 
+    arrange(desc(Times_caught)) %>% 
+    mutate(row_num = row_number()) %>% 
+    select(row_num, everything()) %>% 
+    filter(row_num <= 30) %>% 
+    knitr::kable()
+```
+
+
+### Most abundant  
+
+```{r}
+counts %>% 
+    arrange(desc(n_caught)) %>% 
+    mutate(row_num = row_number()) %>% 
+    select(row_num, everything()) %>% 
+    filter(row_num <= 30) %>% 
+    knitr::kable()
+```
+
+
+## Richness and diversity  
+
+to fill in

@@ -65,7 +65,9 @@ That took the data frame from 532 rows to 475.
 
 # Summary statistics  
 
-Insert a child .Rmd here to generate all the summary info we want.  
+```{r, child = '01_Summary_Stats.Rmd'}
+
+```
 
 
 # Habitat differences within each season   
