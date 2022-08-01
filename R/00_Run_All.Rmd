@@ -20,6 +20,9 @@ suppressPackageStartupMessages(library(glue))
 suppressPackageStartupMessages(library(goeveg))
 suppressPackageStartupMessages(library(rgl))
 suppressPackageStartupMessages(library(ggord))
+suppressPackageStartupMessages(library(ggdist))
+suppressPackageStartupMessages(library(scales))
+suppressPackageStartupMessages(library(patchwork))
 knitr::knit_hooks$set(webgl = hook_webgl)
 ```
 
@@ -161,4 +164,110 @@ log_sub <- filter(log_dat, season == seas)
 ***  
 ***  
 
+# Graphs of SIMPER-significant species  
+
+These graphs are ordered from the species that show up in the most seasons to those that show up in the fewest. The subtitle for each graph names the seasons in which the species was significant.  
+
+Each point on the graphs represents the count in a single sample event.  
+
+Site 1 has been excluded because it was excluded from all other analyses.  
+
+```{r}
+# read in and bind all the individual data frames
+spp_spr <- read.csv(here::here("output", "SIMPER_spps_Spring.csv"))
+spp_sum <- read.csv(here::here("output", "SIMPER_spps_Summer.csv"))
+spp_fall <- read.csv(here::here("output", "SIMPER_spps_Fall.csv"))
+spp_win <- read.csv(here::here("output", "SIMPER_spps_Winter.csv"))
+
+spp_all <- bind_rows(spp_spr, spp_sum, spp_fall, spp_win)
+
+
+# group it
+spp2 <- spp_all %>% 
+    group_by(species) %>% 
+    summarize(n_seasons = n(),
+              seasons = str_c(unique(season), collapse = ", ")) %>% 
+    arrange(desc(n_seasons))
+
+# clean up counts data frame: 
+# change 0s to 0.1 for log scale purposes
+# turn season into a factor with a better order
+# shorten the habitat type that starts with depositional
+# get rid of site 1 since it wasn't in the other analyses
+nfm2 <- nfm_all %>% 
+    filter(site != 1) %>% 
+    mutate(across(`Abudefduf.saxatilis`:ncol(nfm_all),
+                  ~ case_when(. == 0 ~ 0.1,
+                              . != 0 ~ as.numeric(.))),
+           season = fct_relevel(season, "Spring", "Summer", "Fall", "Winter"),
+           habitat_type = case_when(habitat_type == "depositional spartina edge" ~ "depositional edge",
+                                    TRUE ~ habitat_type))
+```
+
+
+```{r, fig.height = 6, fig.width = 12}
+# for each of the species in spp2..... 
+# make 2 plots:
+# panel for season, x-axis is habitat
+# ggdist for y-axis; want all the quantities
+# title = species name
+# subtitle = species in which it was important in SIMPER
+
+# one graph, raw y-axis
+# the other graph, log10 y-axis
+
+
+for(i in seq_along(spp2$species)){
+    # species and season info
+    sp_name <- spp2$species[i]
+    sp_seasons <- spp2$seasons[i]
+    
+    # subset data frame
+    sp_dat <- nfm2[c("habitat_type", "season", sp_name)]
+    
+    # rename for easier graphing
+    names(sp_dat)[3] <- "count"
+    
+    # graph 1: raw y-scale
+    p1 <- ggplot(sp_dat) +
+        geom_dotsinterval(aes(x = habitat_type, y = count, 
+                              fill = habitat_type), 
+                          layout = "swarm",
+                          side = "both",
+                          binwidth = unit(0.05, "npc"),
+                          na.rm = TRUE) +
+        facet_wrap(~season, ncol = 2) +
+        # scale_y_log10() + 
+        theme(axis.text.x = element_text(angle = 45, hjust = 1),
+              legend.position = "none") +
+        labs(title = sp_name,
+             subtitle = glue("SIMPER for {sp_seasons}"),
+             y = "number caught",
+             x = NULL)
+    
+    # graph 2: log10 y-scale
+    p2 <- ggplot(sp_dat) +
+        geom_dotsinterval(aes(x = habitat_type, y = count, 
+                              fill = habitat_type), 
+                          layout = "swarm",
+                          side = "both",
+                          binwidth = unit(0.05, "npc"),
+                          na.rm = TRUE) +
+        facet_wrap(~season, ncol = 2) +
+        scale_y_log10(breaks = trans_breaks("log10", function(x) 10 ^ x),
+                  labels = trans_format("log10", math_format(10^.x))) + 
+        theme(axis.text.x = element_text(angle = 45, hjust = 1),
+              legend.position = "none") +
+        labs(title = sp_name,
+             subtitle = glue("SIMPER for {sp_seasons}"),
+             y = "number caught (log scale)",
+             x = NULL) +
+    annotation_logticks(sides = "l")
+    
+    p <- p1 + p2
+    
+    print(p)
+}
+
+```
 

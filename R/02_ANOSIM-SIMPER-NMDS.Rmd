@@ -341,6 +341,14 @@ simps <- bind_rows(sqrt_simp_spp)
 spps <- unique(simps$species)
 ```
 
+```{r}
+# write this out so we can make other graphs later
+spps_df <- data.frame(species = spps,
+                      season = rep(seas, length(spps)))
+spps_out_name <- glue("SIMPER_spps_{seas}.csv")
+write.csv(spps_df, here::here("output", spps_out_name), row.names = FALSE)
+```
+
 
 Look at all combinations of the 3 axes:
 
