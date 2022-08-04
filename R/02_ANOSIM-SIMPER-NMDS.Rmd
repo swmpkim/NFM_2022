@@ -196,7 +196,9 @@ toprint <- function(x){
 # SIMPER
 # print top 4 species for each pairwise contrast (using function above)
 # and their contribution
-sqrt_simp <- simper(sqrt_spp, expl$habitat_type)
+sqrt_simp <- simper(sqrt_spp, expl$habitat_type, 
+                    permutations = how(blocks = expl$year_season,
+                                                     nperm = 999))
 lapply(summary(sqrt_simp), function(x) toprint(x))
 
 # print info for all of the species that get 
