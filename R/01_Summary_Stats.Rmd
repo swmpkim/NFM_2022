@@ -7,7 +7,11 @@ output: html_document
 
 ```{r}
 # get rid of the 'ones' column though
-dat2 <- dat %>% select(-ones)
+dat2 <- dat %>% 
+    select(-ones) %>% 
+    mutate(season = fct_relevel(season, "Spring", "Summer", "Fall", "Winter"),
+           habitat_type = case_when(habitat_type == "depositional spartina edge" ~ "depositional edge",
+                                    TRUE ~ as.character(habitat_type)))
 ```
 
 
@@ -15,7 +19,7 @@ dat2 <- dat %>% select(-ones)
 
 ```{r}
 dat2 %>% 
-    janitor::tabyl(habitat_type, season)
+    janitor::tabyl(habitat_type, season) 
 ```
 
 
@@ -44,6 +48,25 @@ counts <- dat2 %>%
     pivot_wider(names_from = thing, values_from = value) 
 
 ```
+
+## By habitat, within each season
+
+```{r}
+seasonal_summ <- dat2 %>% 
+    group_by(season, habitat_type) %>% 
+    summarize(across(Abudefduf.saxatilis:Urophycis.floridana, sum)) 
+```
+
+```{r}
+DT::datatable(seasonal_summ,
+              rownames = FALSE,
+              extensions = "FixedColumns",
+              options = list(
+                  scrollX = TRUE,
+                  fixedColumns = list(leftColumns = 2)
+              ))
+```
+
 
 ### Most frequently caught  
 

@@ -24,6 +24,7 @@ suppressPackageStartupMessages(library(ggdist))
 suppressPackageStartupMessages(library(scales))
 suppressPackageStartupMessages(library(patchwork))
 suppressPackageStartupMessages(library(indicspecies))
+suppressPackageStartupMessages(library(DT))
 knitr::knit_hooks$set(webgl = hook_webgl)
 ```
 
