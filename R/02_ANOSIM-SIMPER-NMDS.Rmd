@@ -6,8 +6,7 @@ output: html_document
 set.seed(20220708)
 ```
 
-
-Separate explanatory variables from species  
+Separate explanatory variables from species
 
 ```{r}
 # species matrices
@@ -18,15 +17,11 @@ log_spp <- select(log_sub, Abudefduf.saxatilis:ones)
 expl <- select(sqrt_sub, -(Abudefduf.saxatilis:ones))
 ```
 
+------------------------------------------------------------------------
 
+## ANOSIM
 
-
-***  
-
-## ANOSIM  
-
-
-### Overall for `r seas`  
+### Overall for `r seas`
 
 ```{r}
 ano_sqrt <- anosim(sqrt_spp, grouping = expl$habitat_type,
@@ -43,22 +38,18 @@ ano_unrestricted <- anosim(sqrt_spp, grouping = expl$habitat_type,
 
 ```
 
-
-Double-check to see if restricting permutations changed anything here.  
+Double-check to see if restricting permutations changed anything here.
 
 ```{r}
 ano_sqrt
 ano_unrestricted  
 ```
 
-
-
-### Pairwise between habitats in `r seas`  
+### Pairwise between habitats in `r seas`
 
 ```{r}
 pairs <- t(combn(unique(expl$habitat_type), m = 2))
 ```
-
 
 ```{r}
 pair <- character()
@@ -109,7 +100,6 @@ for(i in 1:nrow(pairs)){
 }
 ```
 
-
 ```{r}
 outs <- data.frame(pair, ano_R_sqrt, ano_p_sqrt, ano_R_log, ano_p_log, n) %>% 
     arrange(desc(ano_R_sqrt))
@@ -133,7 +123,7 @@ knitr::kable(all, digits = 4)
 
 ```
 
-### Density plots of permutations  
+### Density plots of permutations
 
 ```{r}
 samp <- glue("Sample: R = ", {round(ano_sqrt$statistic, 3)}, "; p = ",
@@ -146,7 +136,6 @@ densityplot(perm,
             strip = FALSE,
             sub = samp)
 ```
-
 
 ```{r, fig.width = 8, fig.height = 16}
 # print density plots
@@ -162,13 +151,11 @@ print(densplots[[9]], split = c(1, 5, 2, 5), more = TRUE)
 print(densplots[[10]], split = c(2, 5, 2, 5))
 ```
 
+------------------------------------------------------------------------
 
+## SIMPER
 
-***  
-
-## SIMPER  
-
-**Important Note**: SIMPER should only be used/interpreted if the pairwise ANOSIM for the pair of habitats was significant. Results are automatically generated for every pairwise comparison, but **not all should be used. Check ANOSIM results.**  
+**Important Note**: SIMPER should only be used/interpreted if the pairwise ANOSIM for the pair of habitats was significant. Results are automatically generated for every pairwise comparison, but **not all should be used. Check ANOSIM results.**
 
 ```{r}
 ################################################
@@ -208,22 +195,35 @@ sqrt_simp_spp <- lapply(summary(sqrt_simp), function(z) z[seq_len(min(which(z$cu
 lapply(sqrt_simp_spp, function(z) knitr::kable(z, digits = 4))
 ```
 
-***  
+------------------------------------------------------------------------
 
-## NMDS  
+## Indicator Species Analysis
 
-#### Scree Plot  
+According to [this online tutorial](https://jkzorz.github.io/2019/07/02/Indicator-species-analysis.html), analyses like SIMPER and indicator species analysis should give similar answers. I am trying ISA here as a complement because the SIMPER results have been difficult to interpret. BE CAUTIOUS; THIS IS FAIRLY EXPLORATORY and meant to help understand the results from ANOSIM and ordination.  
 
-How many axes should be used?  
+```{r}
+inv = multipatt(sqrt_spp, expl$habitat_type, 
+                control = how(blocks = expl$year_season,
+                              nperm = 999))
+
+summary(inv)
+```
+
+
+------------------------------------------------------------------------
+
+## NMDS
+
+#### Scree Plot
+
+How many axes should be used?
 
 ```{r}
 # from goeveg package
 dimcheckMDS(sqrt_spp, k = 6, autotransform = FALSE)
 ```
 
-
-
-#### run with 2 axes  
+#### run with 2 axes
 
 ```{r}
 mds2 <- metaMDS(sqrt_spp, distance = "bray", k = 2,
@@ -241,9 +241,7 @@ mds2_pts <- data.frame(mds2$points) %>%
 mds2_spps <- data.frame(mds2$species)
 ```
 
-
-
-#### run with 3 axes  
+#### run with 3 axes
 
 ```{r}
 mds3 <- metaMDS(sqrt_spp, distance = "bray", k = 3,
@@ -261,8 +259,7 @@ mds3_pts <- data.frame(mds3$points) %>%
 mds3_spps <- data.frame(mds3$species)
 ```
 
-
-#### Shepard plots and stress values  
+#### Shepard plots and stress values
 
 ```{r}
 stressplot(mds2, main = "2 axes", 
@@ -271,17 +268,15 @@ stressplot(mds3, main = "3 axes",
            sub = str3)
 ```
 
+## NMDS plots
 
-## NMDS plots  
+Because all the seasons (in my glance) really did need 3 dimensions in the NMDS, I'm commenting out the plots for 2-d results.
 
-Because all the seasons (in my glance) really did need 3 dimensions in the NMDS, I'm commenting out the plots for 2-d results.  
-
-#### Points only; colored by habitat and shaped by year  
+#### Points only; colored by habitat and shaped by year
 
 ```{r}
 yr_shapes <- c(1, 3, 4, 6, 7, 8, 9, 10, 12, 14)
 ```
-
 
 ```{r}
 # NMDS with only 2 axes
@@ -334,8 +329,7 @@ yr_shapes <- c(1, 3, 4, 6, 7, 8, 9, 10, 12, 14)
 #          shape = "Sample Year")
 ```
 
-#### Include species; without ellipses  
-
+#### Include species; without ellipses
 
 ```{r}
 sqrt_simp_spp <- purrr::map(sqrt_simp_spp, rownames_to_column, var = "species") 
@@ -350,7 +344,6 @@ spps_df <- data.frame(species = spps,
 spps_out_name <- glue("SIMPER_spps_{seas}.csv")
 write.csv(spps_df, here::here("output", spps_out_name), row.names = FALSE)
 ```
-
 
 Look at all combinations of the 3 axes:
 
@@ -380,8 +373,7 @@ ggord(mds3, expl$habitat_type,
          color = "Habitat")
 ```
 
-#### Include species; with ellipses  
-
+#### Include species; with ellipses
 
 ```{r, eval = FALSE}
 ggord(mds3, expl$habitat_type, axes = c("1", "2"), poly = FALSE, max.overlaps = 20, var_sub = c(spps))
@@ -391,11 +383,9 @@ ggord(mds3, expl$habitat_type, axes = c("2", "3"), poly = FALSE, max.overlaps = 
 ggord(mds3, expl$habitat_type, axes = c("1", "3"), poly = FALSE, max.overlaps = 20, var_sub = c(spps))
 ```
 
+## 3d NMDS plot
 
-
-## 3d NMDS plot  
-
-Set up color palette and SIMPER-only species  
+Set up color palette and SIMPER-only species
 
 ```{r}
 # a few options I like for the palette
@@ -425,8 +415,6 @@ mds3_spps2 <- mds3_spps %>%
     filter(species %in% spps)
 ```
 
-
-
 ```{r}
 
 # set up points and data frames
@@ -454,7 +442,6 @@ for(i in seq_along(mds_rows)){
                 .before = mds_rows[i])
 }
 ```
-
 
 ```{r, webgl = TRUE}
 # make and save the plot
@@ -520,6 +507,3 @@ htmlwidgets::saveWidget(rglwidget(width = 700,
 
 # close3d()
 ```
-
-
-
