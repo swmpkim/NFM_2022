@@ -199,16 +199,23 @@ lapply(sqrt_simp_spp, function(z) knitr::kable(z, digits = 4))
 
 ## Indicator Species Analysis
 
-According to [this online tutorial](https://jkzorz.github.io/2019/07/02/Indicator-species-analysis.html), analyses like SIMPER and indicator species analysis should give similar answers. I am trying ISA here as a complement because the SIMPER results have been difficult to interpret. BE CAUTIOUS; THIS IS FAIRLY EXPLORATORY and meant to help understand the results from ANOSIM and ordination.  
+According to [this online tutorial](https://jkzorz.github.io/2019/07/02/Indicator-species-analysis.html), analyses like SIMPER and indicator species analysis should give similar answers. I am trying ISA here as a complement because the SIMPER results have been difficult to interpret. BE CAUTIOUS; THIS IS FAIRLY EXPLORATORY and meant to help understand the results from ANOSIM and ordination.
+
+And from the `indicspecies` [package vignette](https://cran.r-project.org/web/packages/indicspecies/vignettes/IndicatorSpeciesAnalysis.html):
+
+Indeed, the indicator value index is the product of two components, called 'A' and 'B' (Dufrêne and Legendre 1997; De Cáceres and Legendre 2009):
+
+1.  Component 'A' is sample estimate of the probability that the surveyed site belongs to the target site group given the fact that the species has been found. This conditional probability is called the *specificity* or *positive predictive value* of the species as indicator of the site group.
+
+2.  Component 'B' is sample estimate of the probability of finding the species in sites belonging to the site group. This second conditional probability is called the *fidelity* or *sensitivity* of the species as indicator of the target site group.
 
 ```{r}
-inv = multipatt(sqrt_spp, expl$habitat_type, 
+inv <- multipatt(sqrt_spp, expl$habitat_type, 
                 control = how(blocks = expl$year_season,
                               nperm = 999))
 
-summary(inv)
+summary(inv, indvalcomp = TRUE)
 ```
-
 
 ------------------------------------------------------------------------
 
