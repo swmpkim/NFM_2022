@@ -49,6 +49,8 @@ counts <- dat2 %>%
 
 ```
 
+# Species Summary tables  
+
 ## By habitat, within each season
 
 ```{r}
@@ -64,6 +66,44 @@ DT::datatable(seasonal_summ,
               options = list(
                   scrollX = TRUE,
                   fixedColumns = list(leftColumns = 2)
+              ))
+```
+
+
+## By season, overall  
+
+```{r}
+seasonal2 <- seasonal_summ %>% 
+    group_by(season) %>% 
+    summarize(across(Abudefduf.saxatilis:Urophycis.floridana, sum)) 
+```
+
+```{r}
+DT::datatable(seasonal2,
+              rownames = FALSE,
+              extensions = "FixedColumns",
+              options = list(
+                  scrollX = TRUE,
+                  fixedColumns = list(leftColumns = 1)
+              ))
+```
+
+
+## By habitat, overall  
+
+```{r}
+hab_summ <- seasonal_summ %>% 
+    group_by(habitat_type) %>% 
+    summarize(across(Abudefduf.saxatilis:Urophycis.floridana, sum))
+```
+
+```{r}
+DT::datatable(hab_summ,
+              rownames = FALSE,
+              extensions = "FixedColumns",
+              options = list(
+                  scrollX = TRUE,
+                  fixedColumns = list(leftColumns = 1)
               ))
 ```
 
