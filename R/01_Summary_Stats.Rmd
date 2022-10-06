@@ -2,8 +2,31 @@
 output: html_document
 ---
 
-**Site 1 is excluded from all summary statistics because it was excluded from further analyses.**  
 
+# Water summaries  
+
+## with site 1 - illustrate difference  
+
+```{r}
+dat_with1 <- nfm_all %>% 
+    filter(is.na(X00.no.sample.taken),
+           is.na(X02.no.lengths..reason.unknown)) %>% 
+    mutate(year_season = as.factor(paste(year_sampled, season, sep = "_")),
+        across(c(collection_id, site, habitat_type, year_sampled, season), as.factor),
+        season = fct_relevel(season, "Spring", "Summer", "Fall", "Winter"),
+           habitat_type = case_when(habitat_type == "depositional spartina edge" ~ "depositional edge",
+                                    TRUE ~ as.character(habitat_type))) %>% 
+    relocate(year_season, .after = "season")
+```
+
+
+Need to do something site-wise here, but what?  
+
+
+
+## drop site 1  
+
+**Site 1 is excluded from all summary statistics because it was excluded from further analyses.** 
 
 ```{r}
 # get rid of the 'ones' column though
@@ -12,8 +35,37 @@ dat2 <- dat %>%
     mutate(season = fct_relevel(season, "Spring", "Summer", "Fall", "Winter"),
            habitat_type = case_when(habitat_type == "depositional spartina edge" ~ "depositional edge",
                                     TRUE ~ as.character(habitat_type)))
+
+names(dat2) <- str_replace_all(names(dat2), "_", ".")
 ```
 
+
+```{r}
+wq_summ <- dat2 %>% 
+    select(collection.id:wind.speed.ms) %>% 
+    group_by(season, habitat.type) %>% 
+    summarize(across(.cols = c(water.temp.c, salinity.ppt, do.mgl),
+                     .fns = list(
+                         mean = ~ mean(.x, na.rm = TRUE),
+                         sd = ~ sd(.x, na.rm = TRUE),
+                         median = ~ median(.x, na.rm = TRUE),
+                         iqr = ~ IQR(.x, na.rm = TRUE)
+                                 ))) %>% 
+    mutate(across(.cols = where(is.numeric), ~ round(.x, 1)))
+wq_for_table <- wq_summ %>% 
+    pivot_longer(-c(season, habitat.type),
+                 names_to = c("param", "stat"),
+                 names_sep = "_") %>% 
+    mutate(param = str_replace_all(param, "\\.", "_")) %>% 
+    pivot_wider(names_from = stat,
+                values_from = value) %>% 
+    arrange(param, season, habitat.type)
+```
+
+
+
+
+# Fish summaries  
 
 ## Sample Size   
 
