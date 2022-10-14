@@ -270,7 +270,7 @@ stressplot(mds3, main = "3 axes",
 ```
 
 
-# BIND ANOSIM, SIMPER, AND NMDS RESULTS  
+## bind ANOSIM, SIMPER, and NMDS results  
 
 ```{r}
 all_stats <- left_join(all, NMDS_for_table) %>% 
