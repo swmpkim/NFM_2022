@@ -277,7 +277,8 @@ all_stats <- left_join(all, NMDS_for_table) %>%
     left_join(., simp_top)
 file_out <- paste0("stat_results_", seas, ".csv")
 write.csv(all_stats, here::here("output", file_out),
-          row.names = FALSE)
+          row.names = FALSE,
+          na = "")
 ```
 
 
