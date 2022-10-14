@@ -517,7 +517,8 @@ out_path <- here::here("output", out_nm)
 
 htmlwidgets::saveWidget(rglwidget(width = 700,
                                   height = 700), 
-                        file = out_path)
+                        file = out_path,
+                        title = paste0(seas, " 3d NMDS"))
 
 # close3d()
 ```
