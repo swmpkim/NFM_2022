@@ -60,7 +60,9 @@ dat <- nfm_all %>%
            is.na(X02.no.lengths..reason.unknown),
            site != 1) %>% 
     mutate(year_season = as.factor(paste(year_sampled, season, sep = "_")),
-        across(c(collection_id, site, habitat_type, year_sampled, season), as.factor),
+           habitat_type = case_when(habitat_type == "depositional spartina edge" ~ "depositional edge",
+                                    TRUE ~ habitat_type),
+           across(c(collection_id, site, habitat_type, year_sampled, season), as.factor),
            ones = 1) %>% 
     relocate(year_season, .after = "season")
 ```
@@ -270,6 +272,23 @@ for(i in seq_along(spp2$species)){
     
     print(p)
 }
+
+```
+
+# Comprehensive stats table  
+
+```{r}
+sprStats <- read.csv(here::here("output", "stat_results_Spring.csv"))
+sumStats <- read.csv(here::here("output", "stat_results_Summer.csv"))
+falStats <- read.csv(here::here("output", "stat_results_Fall.csv"))
+winStats <- read.csv(here::here("output", "stat_results_Winter.csv"))
+
+allStats <- bind_rows(sprStats, sumStats, falStats, winStats)
+
+knitr::kable(allStats)
+write.csv(allStats, here::here("output", "stat_results_ALL.csv"),
+          row.names = FALSE,
+          na = "")
 
 ```
 
