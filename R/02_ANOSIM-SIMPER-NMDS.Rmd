@@ -81,8 +81,8 @@ for(i in 1:nrow(pairs)){
     # store outputs
     pair[i] <- paste(pairs[i, ], collapse = ", ")
     n[i] <- nrow(expl_pr)
-    ano_R_sqrt[i] <- ano_pr_sqrt$statistic
-    ano_p_sqrt[i] <- ano_pr_sqrt$signif
+    ano_R_sqrt[i] <- round(ano_pr_sqrt$statistic, 4)
+    ano_p_sqrt[i] <- round(ano_pr_sqrt$signif, 4)
     ano_R_log[i] <- ano_pr_log$statistic
     ano_p_log[i] <- ano_pr_log$signif
     
@@ -101,21 +101,25 @@ for(i in 1:nrow(pairs)){
 ```
 
 ```{r}
-outs <- data.frame(pair, ano_R_sqrt, ano_p_sqrt, ano_R_log, ano_p_log, n) %>% 
-    arrange(desc(ano_R_sqrt))
+outs <- data.frame(pair, ano_R_sqrt, ano_p_sqrt, ano_R_log, ano_p_log, n) 
 outs$season <- seas
 
 overall <- data.frame(
     pair = "OVERALL",
-    ano_R_sqrt = ano_sqrt$statistic,
-    ano_p_sqrt = ano_sqrt$signif,
+    ano_R_sqrt = round(ano_sqrt$statistic, 4),
+    ano_p_sqrt = round(ano_sqrt$signif, 4),
     ano_R_log = ano_log$statistic,
     ano_p_log = ano_log$signif,
     n = nrow(expl),
     season = seas
 )
 
-all <- bind_rows(overall, outs)
+all <- bind_rows(overall, outs) %>% 
+    select(season,
+           pair,
+           R = ano_R_sqrt,
+           p.val = ano_p_sqrt,
+           n)
 
 knitr::kable(all, digits = 4)
 
@@ -170,11 +174,11 @@ print(densplots[[10]], split = c(2, 5, 2, 5))
 
 
 # for summarizing:
-top <- 4
+top <- 3
 toprint <- function(x){
   out <- character(length = top)
   for(i in 1:top){
-    out[i] <- paste0(rownames(x[i, ]), " (", round(x[i, 1], 3), ")")
+    out[i] <- paste0(rownames(x[i, ]), " (", round(x[i, 1], 3), " +/- ", round(x[i, 2], 3),  ")")
   }
   paste(out, collapse = "; ")
 }
@@ -186,7 +190,12 @@ toprint <- function(x){
 sqrt_simp <- simper(sqrt_spp, expl$habitat_type, 
                     permutations = how(blocks = expl$year_season,
                                                      nperm = 999))
-lapply(summary(sqrt_simp), function(x) toprint(x))
+simp_top <- lapply(summary(sqrt_simp), function(x) toprint(x)) %>% 
+    bind_cols() %>% 
+    pivot_longer(cols = everything(),
+                 names_to = "pair",
+                 values_to = "SIMPER top 3") %>% 
+    mutate(pair = str_replace(pair, "_", ", "))
 
 # print info for all of the species that get 
 # total variance explained above 70%
@@ -195,29 +204,9 @@ sqrt_simp_spp <- lapply(summary(sqrt_simp), function(z) z[seq_len(min(which(z$cu
 lapply(sqrt_simp_spp, function(z) knitr::kable(z, digits = 4))
 ```
 
-------------------------------------------------------------------------
-
-## Indicator Species Analysis
-
-According to [this online tutorial](https://jkzorz.github.io/2019/07/02/Indicator-species-analysis.html), analyses like SIMPER and indicator species analysis should give similar answers. I am trying ISA here as a complement because the SIMPER results have been difficult to interpret. BE CAUTIOUS; THIS IS FAIRLY EXPLORATORY and meant to help understand the results from ANOSIM and ordination.
-
-And from the `indicspecies` [package vignette](https://cran.r-project.org/web/packages/indicspecies/vignettes/IndicatorSpeciesAnalysis.html):
-
-Indeed, the indicator value index is the product of two components, called 'A' and 'B' (Dufrêne and Legendre 1997; De Cáceres and Legendre 2009):
-
-1.  Component 'A' is sample estimate of the probability that the surveyed site belongs to the target site group given the fact that the species has been found. This conditional probability is called the *specificity* or *positive predictive value* of the species as indicator of the site group.
-
-2.  Component 'B' is sample estimate of the probability of finding the species in sites belonging to the site group. This second conditional probability is called the *fidelity* or *sensitivity* of the species as indicator of the target site group.
-
-```{r}
-inv <- multipatt(sqrt_spp, expl$habitat_type, 
-                control = how(blocks = expl$year_season,
-                              nperm = 999))
-
-summary(inv, indvalcomp = TRUE)
-```
 
 ------------------------------------------------------------------------
+
 
 ## NMDS
 
@@ -264,6 +253,11 @@ str3 <- glue("Stress: {round(mds3$stress, 3)}")
 mds3_pts <- data.frame(mds3$points) %>% 
     bind_cols(expl)
 mds3_spps <- data.frame(mds3$species)
+
+# and for stats table
+NMDS_for_table <- data.frame("season" = seas,
+                             "pair" = "OVERALL",
+                             "NMDS_3D_Stress" = round(mds3$stress, 3))
 ```
 
 #### Shepard plots and stress values
@@ -274,6 +268,18 @@ stressplot(mds2, main = "2 axes",
 stressplot(mds3, main = "3 axes",
            sub = str3)
 ```
+
+
+# BIND ANOSIM, SIMPER, AND NMDS RESULTS  
+
+```{r}
+all_stats <- left_join(all, NMDS_for_table) %>% 
+    left_join(., simp_top)
+file_out <- paste0("stat_results_", seas, ".csv")
+write.csv(all_stats, here::here("output", file_out),
+          row.names = FALSE)
+```
+
 
 ## NMDS plots
 
