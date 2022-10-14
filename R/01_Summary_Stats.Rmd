@@ -17,10 +17,43 @@ dat_with1 <- nfm_all %>%
            habitat_type = case_when(habitat_type == "depositional spartina edge" ~ "depositional edge",
                                     TRUE ~ as.character(habitat_type))) %>% 
     relocate(year_season, .after = "season")
+
+names(dat_with1) <- str_replace_all(names(dat_with1), "_", ".")
 ```
 
 
 Need to do something site-wise here, but what?  
+
+```{r}
+site_summ <- dat_with1 %>% 
+    select(collection.id:wind.speed.ms) %>% 
+    group_by(season, site) %>% 
+    summarize(across(.cols = c(water.temp.c, salinity.ppt, do.mgl),
+                     .fns = list(
+                         min = ~ min(.x, na.rm = TRUE),
+                         q1 = ~ quantile(.x, probs = 0.25, na.rm = TRUE),
+                         mean = ~ mean(.x, na.rm = TRUE),
+                         sd = ~ sd(.x, na.rm = TRUE),
+                         median = ~ median(.x, na.rm = TRUE),
+                         iqr = ~ IQR(.x, na.rm = TRUE),
+                         q3 = ~ quantile(.x, probs = 0.75, na.rm = TRUE),
+                         max = ~ max(.x, na.rm = TRUE)
+                                 ))) %>% 
+    mutate(across(.cols = where(is.numeric), ~ round(.x, 1)))
+
+sites_for_table <- site_summ %>% 
+    pivot_longer(-c(season, site),
+                 names_to = c("param", "stat"),
+                 names_sep = "_") %>% 
+    mutate(param = str_replace_all(param, "\\.", "_")) %>% 
+    pivot_wider(names_from = stat,
+                values_from = value) %>% 
+    arrange(param, season, site)
+
+write.csv(sites_for_table, 
+          file = here::here("output", "WQ_by_site.csv"),
+          row.names = FALSE)
+```
 
 
 
@@ -46,12 +79,17 @@ wq_summ <- dat2 %>%
     group_by(season, habitat.type) %>% 
     summarize(across(.cols = c(water.temp.c, salinity.ppt, do.mgl),
                      .fns = list(
+                         min = ~ min(.x, na.rm = TRUE),
+                         q1 = ~ quantile(.x, probs = 0.25, na.rm = TRUE),
                          mean = ~ mean(.x, na.rm = TRUE),
                          sd = ~ sd(.x, na.rm = TRUE),
                          median = ~ median(.x, na.rm = TRUE),
-                         iqr = ~ IQR(.x, na.rm = TRUE)
+                         iqr = ~ IQR(.x, na.rm = TRUE),
+                         q3 = ~ quantile(.x, probs = 0.75, na.rm = TRUE),
+                         max = ~ max(.x, na.rm = TRUE)
                                  ))) %>% 
     mutate(across(.cols = where(is.numeric), ~ round(.x, 1)))
+
 wq_for_table <- wq_summ %>% 
     pivot_longer(-c(season, habitat.type),
                  names_to = c("param", "stat"),
@@ -60,6 +98,10 @@ wq_for_table <- wq_summ %>%
     pivot_wider(names_from = stat,
                 values_from = value) %>% 
     arrange(param, season, habitat.type)
+
+write.csv(wq_for_table, 
+          file = here::here("output", "WQ_by_habitat_NOsite1.csv"),
+          row.names = FALSE)
 ```
 
 
