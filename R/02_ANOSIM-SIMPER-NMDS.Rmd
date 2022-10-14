@@ -274,7 +274,10 @@ stressplot(mds3, main = "3 axes",
 
 ```{r}
 all_stats <- left_join(all, NMDS_for_table) %>% 
-    left_join(., simp_top)
+    left_join(., simp_top) %>% 
+    mutate(`SIMPER top 3` = case_when(p.val > 0.05 ~ "n.s.",
+                                  TRUE ~ `SIMPER top 3`))
+knitr::kable(all_stats)
 file_out <- paste0("stat_results_", seas, ".csv")
 write.csv(all_stats, here::here("output", file_out),
           row.names = FALSE,
