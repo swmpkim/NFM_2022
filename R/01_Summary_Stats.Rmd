@@ -22,7 +22,44 @@ names(dat_with1) <- str_replace_all(names(dat_with1), "_", ".")
 ```
 
 
-Need to do something site-wise here, but what?  
+### Site-wise boxplots  
+
+```{r}
+ggplot(dat_with1) +
+    geom_boxplot(aes(x = site, y = salinity.ppt, fill = site), 
+                 alpha = 0.7) +
+    facet_wrap(~ season, ncol = 2) +
+    labs(title = "Salinity at NFM sites",
+         x = "Site",
+         y = "Salinity (ppt)") +
+    theme_bw() +
+    theme(legend.position = "none")
+
+
+ggplot(dat_with1) +
+    geom_boxplot(aes(x = site, y = do.mgl, fill = site), 
+                 alpha = 0.7) +
+    facet_wrap(~ season, ncol = 2) +
+    labs(title = "Dissolved Oxygen at NFM sites",
+         x = "Site",
+         y = "DO (mg/L)") +
+    theme_bw() +
+    theme(legend.position = "none")
+
+
+ggplot(dat_with1) +
+    geom_boxplot(aes(x = site, y = water.temp.c, fill = site), 
+                 alpha = 0.7) +
+    facet_wrap(~ season, ncol = 2) +
+    labs(title = "Water temperature at NFM sites",
+         x = "Site",
+         y = "Temp (C)") +
+    theme_bw() +
+    theme(legend.position = "none")
+```
+
+
+### Site-wise table  
 
 ```{r}
 site_summ <- dat_with1 %>% 
@@ -105,6 +142,34 @@ write.csv(wq_for_table,
 ```
 
 
+```{r}
+ggplot(dat2) +
+    geom_boxplot(aes(x = season, y = salinity.ppt, fill = habitat.type), alpha = 0.7) +
+    labs(title = "Salinity at NFM sites",
+         subtitle = "Site 1 excluded",
+         x = "Season",
+         y = "Salinity (ppt)",
+         fill = "Habitat Type") +
+    theme_bw() 
+
+ggplot(dat2) +
+    geom_boxplot(aes(x = season, y = do.mgl, fill = habitat.type), alpha = 0.7) +
+    labs(title = "Dissolved Oxygen at NFM sites",
+         subtitle = "Site 1 excluded",
+         x = "Season",
+         y = "DO (mg/L)",
+         fill = "Habitat Type") +
+    theme_bw() 
+
+ggplot(dat2) +
+    geom_boxplot(aes(x = season, y = water.temp.c, fill = habitat.type), alpha = 0.7) +
+    labs(title = "Water Temperature at NFM sites",
+         subtitle = "Site 1 excluded",
+         x = "Season",
+         y = "Temp (C)",
+         fill = "Habitat Type") +
+    theme_bw() 
+```
 
 
 # Fish summaries  
